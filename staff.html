@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="referrer" content="no-referrer">
+  <script src="api.js"></script>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Khmer OS Siemreap', 'Segoe UI', sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 20px;
+      color: #0f172a;
+    }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .refresh-note { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+    .call-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .call-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+      transition: filter 0.12s;
+    }
+    .call-btn:hover { filter: brightness(0.92); }
+    .call-btn.all { background: #16a34a; }
+    .call-btn .icon { font-size: 16px; }
+
+    .color-0 { background: linear-gradient(120deg, #2563eb, #1554b3); }
+    .color-1 { background: linear-gradient(120deg, #22a55e, #15803d); }
+    .color-2 { background: linear-gradient(120deg, #ec4899, #db2777); }
+    .color-3 { background: linear-gradient(120deg, #8b5cf6, #7c3aed); }
+    .color-4 { background: linear-gradient(120deg, #ef4444, #dc2626); }
+    .color-5 { background: linear-gradient(120deg, #f97316, #ea580c); }
+    .color-6 { background: linear-gradient(120deg, #06b6d4, #0891b2); }
+    .color-7 { background: linear-gradient(120deg, #eab308, #ca8a04); }
+    .color-8 { background: linear-gradient(120deg, #6366f1, #4f46e5); }
+    .color-9 { background: linear-gradient(120deg, #14b8a6, #0d9488); }
+
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    th, td { padding: 12px 14px; text-align: left; font-size: 14px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #e2e8f0; font-weight: 600; }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .Waiting { background: #fef3c7; color: #92400e; }
+    .Called { background: #dbeafe; color: #1e40af; }
+    .Done { background: #dcfce7; color: #166534; }
+    .Cancelled { background: #fee2e2; color: #991b1b; }
+
+    .row-actions button {
+      padding: 6px 10px;
+      margin-right: 4px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      color: white;
+    }
+    .btn-called { background: #2563eb; }
+    .btn-done { background: #16a34a; }
+    .btn-cancel { background: #dc2626; }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #0f172a;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🩺 ផ្ទាំងគ្រប់គ្រង (Staff)</h1>
+  <p class="refresh-note">ធ្វើបច្ចុប្បន្នភាពស្វ័យប្រវត្តិរៀងរាល់ ៥ វិនាទី</p>
+
+  <div class="call-section" id="callButtons"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>លេខសំបុត្រ</th>
+        <th>សេវាកម្ម</th>
+        <th>បញ្ជរ<br>Counter</th>
+        <th>ស្ថានភាព</th>
+        <th>ម៉ោងចេញលេខ</th>
+        <th>ម៉ោងហៅ</th>
+        <th>សកម្មភាព</th>
+      </tr>
+    </thead>
+    <tbody id="queueBody"></tbody>
+  </table>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var pollTimer = null;
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(function () { t.style.display = 'none'; }, 2500);
+    }
+
+    function loadServiceButtons() {
+      apiCall('getServiceTypesFull', {}, function (services) {
+        var container = document.getElementById('callButtons');
+        container.innerHTML = '';
+
+        var allBtn = document.createElement('button');
+        allBtn.className = 'call-btn all';
+        allBtn.innerHTML = '<span class="icon">📢</span> ហៅលេខបន្ទាប់ (ណាមួយ)';
+        allBtn.onclick = function () { callNext(''); };
+        container.appendChild(allBtn);
+
+        services.forEach(function (s) {
+          var btn = document.createElement('button');
+          btn.className = 'call-btn ' + s.colorClass;
+          btn.innerHTML = '<span class="icon">' + s.icon + '</span> ' + s.name + ' (Counter ' + s.counter + ')';
+          btn.onclick = function () { callNext(s.name); };
+          container.appendChild(btn);
+        });
+      }, function (err) { showToast(err.message); });
+    }
+
+    function callNext(serviceType) {
+      apiCall('callNextTicket', { serviceType: serviceType }, function (res) {
+        if (res.success) {
+          showToast('បានហៅលេខ ' + res.ticketNumber + ' (' + res.serviceType + ')');
+          refreshQueue();
+        } else {
+          showToast(res.error);
+        }
+      }, function (err) { showToast(err.message); });
+    }
+
+    function updateStatus(queueId, status) {
+      apiCall('updateTicketStatus', { queueId: queueId, newStatus: status }, function (res) {
+        if (res.success) { showToast('បានធ្វើបច្ចុប្បន្នភាព'); refreshQueue(); }
+        else { showToast(res.error); }
+      }, function (err) { showToast(err.message); });
+    }
+
+    function refreshQueue() {
+      apiCall('getQueueData', {}, renderQueue, function (err) { showToast(err.message); });
+    }
+
+    function renderQueue(rows) {
+      var tbody = document.getElementById('queueBody');
+      tbody.innerHTML = '';
+      // Show most recent first
+      rows.slice().reverse().forEach(function (row) {
+        var tr = document.createElement('tr');
+
+        var actions = '';
+        if (row.status === 'Waiting') {
+          actions += '<button class="btn-called" onclick="updateStatus(\'' + row.queueId + '\',\'Called\')">ហៅ</button>';
+          actions += '<button class="btn-cancel" onclick="updateStatus(\'' + row.queueId + '\',\'Cancelled\')">លុប</button>';
+        } else if (row.status === 'Called') {
+          actions += '<button class="btn-done" onclick="updateStatus(\'' + row.queueId + '\',\'Done\')">រួចរាល់</button>';
+          actions += '<button class="btn-cancel" onclick="updateStatus(\'' + row.queueId + '\',\'Cancelled\')">លុប</button>';
+        }
+
+        tr.innerHTML =
+          '<td><strong>' + row.ticketNumber + '</strong></td>' +
+          '<td>' + row.serviceType + '</td>' +
+          '<td style="text-align:center;font-weight:700;color:#1554b3">' + row.counter + '</td>' +
+          '<td><span class="badge ' + row.status + '">' + row.status + '</span></td>' +
+          '<td>' + row.createdTime + '</td>' +
+          '<td>' + (row.calledTime || '-') + '</td>' +
+          '<td class="row-actions">' + actions + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    loadServiceButtons();
+    refreshQueue();
+    pollTimer = setInterval(refreshQueue, 5000);
+  </script>
+</body>
+</html>

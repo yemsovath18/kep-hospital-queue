@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="referrer" content="no-referrer">
+  <script src="api.js"></script>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100%;
+      font-family: 'Khmer OS Siemreap', 'Segoe UI', Arial, sans-serif;
+      background: #dbe9f7;
+    }
+    .screen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 22px 26px;
+      max-width: 760px;
+      width: 100%;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #bfe3fb 0%, #e8f6ff 45%, #cfeaf9 100%);
+      box-shadow: 0 0 40px rgba(18,58,122,0.15);
+    }
+
+    /* ---------- Header ---------- */
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+    .logo-area { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
+    .logo-circle {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+    .logo-circle img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+    .hospital-name { min-width: 0; flex: 1; }
+    .hospital-name .khmer,
+    .hospital-name .english {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hospital-name .khmer { font-size: 17px; font-weight: 800; color: #123a7a; line-height: 1.3; }
+    .hospital-name .english { font-size: 13px; font-weight: 700; color: #123a7a; }
+    .datetime { text-align: right; align-self: flex-end; }
+    .datetime .date { font-size: 10px; color: #123a7a; font-weight: 600; }
+    .datetime .time { font-size: 15px; font-weight: 800; color: #123a7a; }
+
+    /* ---------- Title ---------- */
+    .title-section { text-align: center; margin: 10px 0 24px; }
+    .title-khmer { font-size: 26px; font-weight: 800; color: #123a7a; }
+    .title-english { font-size: 14px; font-weight: 600; color: #4a6fa5; margin-top: 4px; }
+
+    /* ---------- Service buttons ---------- */
+    .buttons-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 16px;
+      width: 100%;
+    }
+    @media (max-width: 480px) {
+      .buttons-list { grid-template-columns: 1fr; }
+    }
+    .service-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 16px;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+      transition: transform 0.12s;
+      text-align: left;
+      min-width: 0;
+    }
+    .service-btn:active { transform: scale(0.97); }
+    .service-btn .icon-circle {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .service-btn .label {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .service-btn .arrow { font-size: 16px; font-weight: 800; opacity: 0.9; flex-shrink: 0; }
+
+    .color-0 { background: linear-gradient(120deg, #2563eb, #1554b3); }
+    .color-1 { background: linear-gradient(120deg, #22a55e, #15803d); }
+    .color-2 { background: linear-gradient(120deg, #ec4899, #db2777); }
+    .color-3 { background: linear-gradient(120deg, #8b5cf6, #7c3aed); }
+    .color-4 { background: linear-gradient(120deg, #ef4444, #dc2626); }
+    .color-5 { background: linear-gradient(120deg, #f97316, #ea580c); }
+    .color-6 { background: linear-gradient(120deg, #06b6d4, #0891b2); }
+    .color-7 { background: linear-gradient(120deg, #eab308, #ca8a04); }
+    .color-8 { background: linear-gradient(120deg, #6366f1, #4f46e5); }
+    .color-9 { background: linear-gradient(120deg, #14b8a6, #0d9488); }
+
+    .loading, .error { text-align: center; margin-top: 16px; font-size: 13px; }
+    .loading { color: #4a6fa5; }
+    .error { color: #d92d20; font-weight: 600; }
+
+    /* ---------- Ticket result overlay ---------- */
+    #ticketResult {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(18,58,122,0.55);
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    #ticketResult .ticket-card {
+      background: #fff;
+      border-radius: 22px;
+      padding: 36px 30px;
+      text-align: center;
+      width: 90%;
+      max-width: 360px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    #ticketResult .label { color: #4a6fa5; font-size: 13px; font-weight: 600; }
+    #ticketResult .number { font-size: 56px; font-weight: 800; color: #123a7a; margin: 8px 0; }
+    #ticketResult .meta { color: #555; font-size: 13px; margin-bottom: 20px; }
+    .action-buttons { display: flex; gap: 10px; }
+    .action-buttons button {
+      flex: 1;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #fff;
+      font-weight: 700;
+    }
+    .print-btn { background: #1554b3; }
+    .new-ticket-btn { background: #6b7280; }
+
+    /* ---------- Footer ---------- */
+    .footer {
+      margin-top: auto;
+      padding-top: 22px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #123a7a;
+    }
+    .footer .heart-icon { font-size: 18px; }
+    .footer .tagline-khmer { font-size: 13px; font-weight: 700; }
+    .footer .tagline-english { font-size: 10px; color: #4a6fa5; }
+
+    /* ---------- Print receipt (hidden, print-only) ---------- */
+    #printArea { display: none; }
+    @page {
+      size: 80mm auto;
+      margin: 0;
+    }
+    @media print {
+      .screen, #ticketResult { display: none !important; }
+      #printArea {
+        display: block !important;
+        width: 80mm;
+        padding: 5mm 3mm 6mm;
+        text-align: center;
+        color: #000;
+        font-family: 'Khmer OS', Arial, sans-serif;
+      }
+      #printArea .print-logo { width: 20mm; height: 20mm; display: block; margin: 0 auto 2mm; }
+      #printArea .print-hospital-khmer { font-size: 15pt; font-weight: bold; color: #1554b3; margin-bottom: 1mm; }
+      #printArea .print-subtitle { font-size: 10pt; color: #000; margin-bottom: 2mm; }
+      #printArea .print-line { border-top: 1px dashed #000; margin: 2.5mm 0; }
+      #printArea .print-label { font-size: 10pt; margin-top: 1mm; }
+      #printArea .print-number { font-size: 60pt; font-family: 'Arial Black', Arial, sans-serif; font-weight: 900; line-height: 1; margin: 2mm 0; }
+      #printArea .print-meta { font-size: 9pt; margin-top: 1mm; }
+      #printArea .print-footer { font-size: 9pt; margin-top: 1mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen">
+
+    <div class="header">
+      <div class="logo-area">
+        <div class="logo-circle"><img src="data:image/png;base64,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" alt="Hospital Logo"></div>
+        <div class="hospital-name">
+          <div class="khmer" style="font-family:'Khmer OS Muol Light'">មន្ទីរពេទ្យខេត្តកែប</div>
+          <div class="english">KEP PROVINCIAL HOSPITAL</div>
+        </div>
+      </div>
+      <div class="datetime">
+        <div class="date" id="dateText">--</div>
+        <div class="time" id="timeText">--</div>
+      </div>
+    </div>
+
+    <div class="title-section">
+      <div class="title-khmer">សូមជ្រើសរើសសេវា</div>
+      <div class="title-english">Please select a service</div>
+    </div>
+
+    <div class="buttons-list" id="serviceButtons"></div>
+    <div id="statusMsg"></div>
+
+    <div class="footer">
+      <div class="heart-icon">❤️</div>
+      <div>
+        <div class="tagline-khmer">សុខភាពល្អ ស្របទាំងអស់គ្នា</div>
+        <div class="tagline-english">Better Health for a Brighter Future</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ticketResult">
+    <div class="ticket-card">
+      <div class="label">លេខរបស់អ្នកគឺ</div>
+      <div class="number" id="ticketNumberDisplay">-</div>
+      <div class="meta" id="ticketMeta"></div>
+      <div class="action-buttons">
+        <button class="print-btn" onclick="printTicket()">🖨️ បោះពុម្ព</button>
+        <button class="new-ticket-btn" onclick="resetView()">យកលេខថ្មី</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print-only receipt (80mm thermal paper) -->
+  <div id="printArea">
+    <img class="print-logo" src="data:image/png;base64,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" alt="Hospital Logo">
+    <div class="print-hospital-khmer" style="font-family:'Khmer OS Muol Light'">មន្ទីរពេទ្យខេត្តកែប</div>
+    <div class="print-subtitle" style="font-family:'Khmer OS Muol Light'">ប្រព័ន្ធគ្រប់គ្រងជួររង់ចាំ</div>
+    <div class="print-line"></div>
+    <div class="print-label">លេខរង់ចាំរបស់អ្នក</div>
+    <div class="print-number" id="printTicketNumber">-</div>
+    <div class="print-meta" id="printTicketMeta"></div>
+    <div class="print-line"></div>
+    <div class="print-footer">សូមរង់ចាំការហៅលេខ សូមអរគុណ</div>
+  </div>
+
+  <script>
+    function updateClock() {
+      var now = new Date();
+      var dateStr = new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+      var timeStr = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).format(now);
+      document.getElementById('dateText').innerText = dateStr;
+      document.getElementById('timeText').innerText = timeStr;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    function loadServices() {
+      apiCall('getServiceTypesFull', {}, renderButtons, function (err) { document.getElementById('statusMsg').innerHTML = '<div class="error">' + err.message + '</div>'; });
+    }
+
+    function renderButtons(services) {
+      var container = document.getElementById('serviceButtons');
+      container.innerHTML = '';
+      services.forEach(function (s) {
+        var btn = document.createElement('button');
+        btn.className = 'service-btn ' + s.colorClass;
+        btn.innerHTML =
+          '<div class="icon-circle">' + s.icon + '</div>' +
+          '<div class="label">' + s.name + '</div>' +
+          '<div class="arrow">&#8250;</div>';
+        btn.onclick = function () { takeTicket(s.name); };
+        container.appendChild(btn);
+      });
+    }
+
+    function takeTicket(serviceType) {
+      document.getElementById('statusMsg').innerHTML = '<div class="loading">កំពុងទាញយកលេខ...</div>';
+      apiCall('createTicket', { serviceType: serviceType }, function (res) {
+        document.getElementById('statusMsg').innerHTML = '';
+        if (res.success) {
+          document.getElementById('ticketResult').style.display = 'flex';
+          document.getElementById('ticketNumberDisplay').innerText = res.ticketNumber;
+          document.getElementById('ticketMeta').innerText = res.serviceType + ' • ' + res.createdTime;
+          document.getElementById('printTicketNumber').innerText = res.ticketNumber;
+          document.getElementById('printTicketMeta').innerText = res.serviceType + ' • ' + res.createdTime;
+        } else {
+          document.getElementById('statusMsg').innerHTML = '<div class="error">' + res.error + '</div>';
+        }
+      }, function (err) {
+        document.getElementById('statusMsg').innerHTML = '<div class="error">' + err.message + '</div>';
+      });
+    }
+
+    function resetView() {
+      document.getElementById('ticketResult').style.display = 'none';
+    }
+
+    function printTicket() {
+      window.print();
+    }
+
+    loadServices();
+  </script>
+</body>
+</html>

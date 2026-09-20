@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="referrer" content="no-referrer">
+  <script src="api.js"></script>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Khmer OS Siemreap', 'Segoe UI', Arial, sans-serif;
+      overflow: hidden;
+      background: #dbe9f7;
+    }
+    .screen {
+      position: relative;
+      height: 100vh;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, #eaf4ff 0%, #d6ecfb 55%, #eaf4ff 100%);
+      box-shadow: 0 0 50px rgba(18,58,122,0.2);
+    }
+
+    /* ---------- Top wave banner ---------- */
+    .top-banner {
+      position: relative;
+      background: linear-gradient(120deg, #0a3474 0%, #1554b3 45%, #4a90d9 100%);
+      padding: 22px 34px 46px;
+      color: #fff;
+    }
+    .top-banner-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .top-wave-svg {
+      position: absolute;
+      bottom: -1px; left: 0;
+      width: 100%; height: 46px;
+      display: block;
+    }
+    .logo-area { display: flex; align-items: center; gap: 16px; }
+    .logo-circle {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .logo-circle img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+    .hospital-name .khmer { font-size: 27px; font-weight: 700; }
+    .hospital-name .english { font-size: 17px; font-weight: 500; opacity: 0.92; letter-spacing: 1px; }
+    .datetime { text-align: right; }
+    .datetime .date { font-size: 18px; opacity: 0.92; }
+    .datetime .time { font-size: 29px; font-weight: 700; }
+
+    /* ---------- Main grid ---------- */
+    .main-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 58% 42%;
+      gap: 18px;
+      padding: 10px 26px;
+      min-height: 0;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 6px 18px rgba(13,61,143,0.15);
+    }
+
+    /* Now calling card */
+    .card-header-solid {
+      background: linear-gradient(120deg, #0a3474, #1554b3);
+      color: #fff;
+      text-align: center;
+      padding: 12px;
+      font-size: 27px;
+      font-weight: 700;
+    }
+    .card-header-solid .sub { display: block; font-size: 18px; font-weight: 500; opacity: 0.92; }
+    .now-calling-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+    }
+    .speaker-icon { font-size: 60px; }
+    .ticket-number {
+      font-size: 180px;
+      font-weight: 800;
+      color: #123a7a;
+      line-height: 1;
+    }
+    .divider { width: 70%; border-top: 2px solid #d7e2f5; margin: 6px 0; }
+    .proceed-text { font-size: 25px; color: #333; }
+    .counter-text { font-size: 40px; font-weight: 800; color: #123a7a; }
+    .placeholder { opacity: 0.45; }
+
+    @keyframes flash {
+      0%   { transform: scale(1);    filter: brightness(1); }
+      15%  { transform: scale(1.06); filter: brightness(1.3); }
+      30%  { transform: scale(1);    filter: brightness(1); }
+    }
+    .flash { animation: flash 0.9s ease-in-out 2; }
+
+    /* Next in queue card */
+    .card-header-light {
+      text-align: center;
+      padding: 14px 12px 10px;
+      color: #123a7a;
+      font-size: 25px;
+      font-weight: 700;
+    }
+    .card-header-light .sub { display: block; font-size: 16px; font-weight: 500; color: #4a6fa5; }
+    .queue-table-wrap { flex: 1; overflow: hidden; padding: 0 14px 14px; }
+    table.queue-table { width: 100%; border-collapse: collapse; }
+    table.queue-table th {
+      background: linear-gradient(120deg, #0a3474, #1554b3);
+      color: #fff;
+      font-size: 18px;
+      padding: 10px 6px;
+      text-align: center;
+    }
+    table.queue-table th:first-child { border-top-left-radius: 8px; }
+    table.queue-table th:last-child { border-top-right-radius: 8px; }
+    table.queue-table td {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: #1a1a1a;
+      padding: 10px 6px;
+      border-bottom: 1px solid #eef3fb;
+    }
+    table.queue-table tr:nth-child(even) td { background: #eaf2fc; }
+    table.queue-table td.ticket-col { color: #1554b3; }
+    .empty-row td { color: #aaa; font-weight: 500; font-size: 18px; }
+
+    /* ---------- Bottom decorative scene + tagline ---------- */
+    .bottom-scene {
+      position: relative;
+      height: 15vh;
+      min-height: 90px;
+      overflow: hidden;
+    }
+    .bottom-scene svg { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; }
+    .tagline {
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 14px;
+      text-align: center;
+      color: #123a7a;
+      z-index: 2;
+    }
+    .tagline-row { display: flex; align-items: center; justify-content: center; gap: 14px; }
+    .tagline-row .line { width: 60px; height: 2px; background: #123a7a; opacity: 0.5; }
+    .tagline-khmer { font-size: 25px; font-weight: 700; }
+    .tagline-english { font-size: 16px; margin-top: 2px; }
+
+    /* ---------- Sound overlay ---------- */
+    #soundOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      font-size: 22px;
+      cursor: pointer;
+      z-index: 999;
+      text-align: center;
+    }
+    #soundOverlay .icon { font-size: 48px; }
+    #audioStatus {
+      position: fixed;
+      bottom: 6px; left: 10px;
+      font-size: 11px;
+      color: rgba(18,58,122,0.5);
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div id="soundOverlay">
+    <div class="icon">🔊</div>
+    <div>ចុចត្រង់នេះ ដើម្បីបើកសំឡេងហៅលេខ</div>
+  </div>
+  <div id="audioStatus">សំឡេង៖ កំពុងផ្ទុក...</div>
+
+  <div class="screen">
+
+    <!-- TODO: replace hospital name / logo text below with your own -->
+    <div class="top-banner">
+      <div class="top-banner-content">
+        <div class="logo-area">
+          <div class="logo-circle"><img src="data:image/png;base64,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" alt="Hospital Logo"></div>
+          <div class="hospital-name">
+            <div class="khmer"><p style="font-family:Khmer OS Muol Light">មន្ទីរពេទ្យខេត្តកែប</p></div>
+            <div class="english">KEP PROVINCIAL HOSPITAL</div>
+          </div>
+        </div>
+        <div class="datetime">
+          <div class="date" id="dateText">--</div>
+          <div class="time" id="timeText">--</div>
+        </div>
+      </div>
+      <svg class="top-wave-svg" viewBox="0 0 1500 60" preserveAspectRatio="none">
+        <path d="M0,20 C400,70 1100,-10 1500,35 L1500,60 L0,60 Z" fill="#eaf4ff"></path>
+      </svg>
+    </div>
+
+    <div class="main-grid">
+      <div class="card">
+        <div class="card-header-solid">លេខកំពុងហៅ<span class="sub">Now Calling</span></div>
+        <div class="now-calling-body">
+          <div class="speaker-icon">🔊</div>
+          <div class="ticket-number placeholder" id="ticketNumber">--</div>
+          <div class="divider"></div>
+          <div class="proceed-text">ទៅកាន់</div>
+          <div class="counter-text">បញ្ជរលេខ <span id="counterNumber">-</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header-light">លេខរង់ចាំបន្ទាប់<span class="sub">Next in Queue</span></div>
+        <div class="queue-table-wrap">
+          <table class="queue-table">
+            <thead>
+              <tr><th>No.</th><th>លេខរង់ចាំ<br>Queue No.</th><th>លេខបញ្ជរ<br>Counter</th></tr>
+            </thead>
+            <tbody id="queueTableBody">
+              <tr class="empty-row"><td colspan="3">មិនទាន់មានអ្នករង់ចាំ</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODO: replace tagline below with your own -->
+    <div class="bottom-scene">
+      <svg viewBox="0 0 1500 200" preserveAspectRatio="none">
+        <rect x="0" y="0" width="1500" height="200" fill="#bfe3f7"></rect>
+        <polygon points="0,120 180,40 340,120" fill="#3f7a5a" opacity="0.85"></polygon>
+        <polygon points="120,130 300,55 480,130" fill="#4f8f68" opacity="0.85"></polygon>
+        <polygon points="1150,140 1320,70 1500,140" fill="#4f8f68" opacity="0.75"></polygon>
+        <rect x="0" y="120" width="1500" height="80" fill="#7fc4e0" opacity="0.9"></rect>
+        <rect x="0" y="150" width="1500" height="50" fill="#eede9d" opacity="0.4"></rect>
+      </svg>
+      <div class="tagline">
+        <div class="tagline-row">
+          <div class="line"></div>
+          <div>
+            <div class="tagline-khmer">Better Care, Better Health</div>
+            <div class="tagline-english">By : YEM SOVATH</div>
+          </div>
+          <div class="line"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var lastTicket = null;
+    var availableKeys = [];   // list of clip keys that exist, e.g. ["Customer","A","001",...]
+    var audioCache = {};      // { key: dataURI } - filled in as clips are fetched
+    var soundEnabled = false;
+    var announcePlayer = new Audio();
+    var repeatTimer = null;
+    var currentAnnounceKeys = null;
+
+    // A real (but silent) short clip, embedded directly - used only to satisfy the
+    // browser's autoplay policy, which requires an actual successful play() call
+    // to happen synchronously inside a user click before later script-triggered
+    // audio is allowed to play.
+    var SILENT_UNLOCK_URI = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+
+    // --- Load the audio manifest as soon as the page loads (doesn't need a click) ---
+    loadAudioManifest();
+
+    function loadAudioManifest() {
+      apiCall('getAudioManifest', {}, function (keys) {
+        if (keys && !keys.error) {
+          availableKeys = keys;
+          setAudioStatus('សំឡេង៖ រកឃើញ ' + keys.length + ' file');
+        } else {
+          setAudioStatus('សំឡេង៖ error - ' + (keys && keys.error));
+        }
+      }, function (err) {
+        setAudioStatus('សំឡេង៖ បរាជ័យ - ' + err.message);
+      });
+    }
+
+    function setAudioStatus(text) {
+      var el = document.getElementById('audioStatus');
+      if (el) el.innerText = text;
+    }
+
+    // --- Enable sound on first user interaction (required by browser autoplay rules) ---
+    document.getElementById('soundOverlay').addEventListener('click', function () {
+      soundEnabled = true;
+      this.style.display = 'none';
+      // Play a real (silent) clip synchronously from this click - this is what
+      // actually unlocks later programmatic audio.play() calls in most browsers.
+      announcePlayer.src = SILENT_UNLOCK_URI;
+      announcePlayer.play().catch(function (err) { setAudioStatus('សំឡេង៖ unlock error - ' + err.message); });
+      refreshDisplay();
+    });
+
+    // Fetches one clip's actual audio bytes (as a data URI) the first time it's needed,
+    // then reuses the cached copy on every later call - so repeats don't re-fetch.
+    function getClipDataURI(key, callback) {
+      if (audioCache[key]) { callback(audioCache[key]); return; }
+      if (availableKeys.indexOf(key) === -1) { callback(null); return; } // no clip recorded for this key yet
+      apiCall('getAudioData', { key: key }, function (result) {
+        if (result && result.base64) {
+          var uri = 'data:' + result.mimeType + ';base64,' + result.base64;
+          audioCache[key] = uri;
+          callback(uri);
+        } else {
+          setAudioStatus('សំឡេង៖ clip error (' + key + ') - ' + (result && result.error));
+          callback(null);
+        }
+      }, function (err) {
+        setAudioStatus('សំឡេង៖ clip fetch failed (' + key + ') - ' + err.message);
+        callback(null);
+      });
+    }
+
+    // Plays a list of audio keys in sequence (e.g. ['Customer','G','023','Counter3']).
+    // Missing/failed clips are skipped silently. Calls onDone() after the last one finishes.
+    function playSequence(keys, onDone) {
+      var idx = 0;
+      function playNext() {
+        if (idx >= keys.length) { if (onDone) onDone(); return; }
+        var key = keys[idx];
+        idx++;
+        getClipDataURI(key, function (uri) {
+          if (!uri) { playNext(); return; }
+          announcePlayer.onended = playNext;
+          announcePlayer.onerror = playNext;
+          announcePlayer.src = uri;
+          announcePlayer.play().catch(function (err) {
+            setAudioStatus('សំឡេង៖ play error (' + key + ') - ' + err.message);
+            playNext();
+          });
+        });
+      }
+      playNext();
+    }
+
+    // Builds the announcement key sequence for a ticket, e.g. "G023" + counter "3"
+    // -> ['Customer', 'G', '023', 'Counter3']
+    function buildAnnounceKeys(ticketNumber, counter) {
+      var letter = ticketNumber.charAt(0);
+      var number = ticketNumber.slice(1); // e.g. "023"
+      return ['Customer', letter, number, 'Counter' + counter];
+    }
+
+    // Announces once, then keeps repeating every few seconds until the ticket changes
+    // (scheduleAnnounce is called again with new keys, which cancels this loop).
+    function scheduleAnnounce(keys) {
+      clearTimeout(repeatTimer);
+      currentAnnounceKeys = keys;
+      var runOnce = function () {
+        playSequence(keys, function () {
+          repeatTimer = setTimeout(function () {
+            // Only repeat if this is still the current ticket being called
+            if (currentAnnounceKeys === keys) runOnce();
+          }, 15000);
+        });
+      };
+      runOnce();
+    }
+
+    // --- Clock ---
+    function updateClock() {
+      var now = new Date();
+      var dateStr = new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+      var timeStr = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).format(now);
+      document.getElementById('dateText').innerText = dateStr;
+      document.getElementById('timeText').innerText = timeStr;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // --- Poll queue overview every 5 seconds ---
+    function refreshDisplay() {
+      apiCall('getDisplayOverview', {}, renderOverview, function (err) { setAudioStatus('ទិន្នន័យ៖ ' + err.message); });
+    }
+
+    function renderOverview(overview) {
+      var ticketEl = document.getElementById('ticketNumber');
+      var counterEl = document.getElementById('counterNumber');
+      var current = overview.current;
+
+      if (!current) {
+        ticketEl.innerText = '--';
+        counterEl.innerText = '-';
+        ticketEl.classList.add('placeholder');
+      } else {
+        ticketEl.classList.remove('placeholder');
+        var isNew = current.ticketNumber !== lastTicket;
+        ticketEl.innerText = current.ticketNumber;
+        counterEl.innerText = current.counter;
+
+        if (isNew) {
+          ticketEl.classList.remove('flash');
+          void ticketEl.offsetWidth; // reflow so animation can replay
+          ticketEl.classList.add('flash');
+          lastTicket = current.ticketNumber;
+          if (soundEnabled) {
+            scheduleAnnounce(buildAnnounceKeys(current.ticketNumber, current.counter));
+          }
+        }
+      }
+
+      // Render "Next in Queue" table
+      var tbody = document.getElementById('queueTableBody');
+      tbody.innerHTML = '';
+      if (!overview.nextQueue || overview.nextQueue.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="3">មិនទាន់មានអ្នករង់ចាំ</td></tr>';
+      } else {
+        overview.nextQueue.forEach(function (row) {
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + row.no + '</td>' +
+            '<td class="ticket-col">' + row.ticketNumber + '</td>' +
+            '<td>' + row.counter + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    refreshDisplay();
+    setInterval(refreshDisplay, 5000);
+  </script>
+</body>
+</html>

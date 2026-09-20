@@ -3,7 +3,7 @@
  * The Google Apps Script Web App remains the backend/database API.
  */
 const GAS_API_URL =
-  'https://script.google.com/macros/s/AKfycbxCRXvqDsG9qHhl9QSu358Sggehtv1ocu0cG-fZVz34yUQjqzaIOlDVhegRmIAGQx7VNw/exec';
+  'https://script.google.com/macros/s/AKfycbzBGPla1vetW7DsD7Eylhu0HvoSNC_HXi41cEZCV8TJpvPBrH_M1acCYMR1BLBiIfGv7w/exec';
 
 function apiCall(action, params, onSuccess, onFailure) {
   params = params || {};

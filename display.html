@@ -418,6 +418,11 @@
         ticketEl.innerText = '--';
         counterEl.innerText = '-';
         ticketEl.classList.add('placeholder');
+        // No ticket is currently "Called" anymore (e.g. staff marked it Done) -
+        // stop repeating the last announcement and reset so the next call is treated as new.
+        clearTimeout(repeatTimer);
+        currentAnnounceKeys = null;
+        lastTicket = null;
       } else {
         ticketEl.classList.remove('placeholder');
         var isNew = current.ticketNumber !== lastTicket;

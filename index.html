@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="referrer" content="no-referrer">
-  <script src="api.js"></script>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>មន្ទីរពេទ្យខេត្តកែប - យកលេខរង់ចាំ</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       min-height: 100%;
-      font-family: 'Khmer OS Siemreap', 'Segoe UI', Arial, sans-serif;
+      font-family: 'Khmer OS Siemrap', 'Segoe UI', Arial, sans-serif;
       background: #dbe9f7;
     }
     .screen {
@@ -253,6 +253,7 @@
     <div class="print-footer">សូមរង់ចាំការហៅលេខ សូមអរគុណ</div>
   </div>
 
+  <script src="api.js"></script>
   <script>
     function updateClock() {
       var now = new Date();
@@ -265,7 +266,11 @@
     setInterval(updateClock, 1000);
 
     function loadServices() {
-      apiCall('getServiceTypesFull', {}, renderButtons, function (err) { document.getElementById('statusMsg').innerHTML = '<div class="error">' + err.message + '</div>'; });
+      HospitalAPI.getServiceTypesFull()
+        .then(renderButtons)
+        .catch(function (err) {
+          document.getElementById('statusMsg').innerHTML = '<div class="error">' + err.message + '</div>';
+        });
     }
 
     function renderButtons(services) {
@@ -285,20 +290,22 @@
 
     function takeTicket(serviceType) {
       document.getElementById('statusMsg').innerHTML = '<div class="loading">កំពុងទាញយកលេខ...</div>';
-      apiCall('createTicket', { serviceType: serviceType }, function (res) {
-        document.getElementById('statusMsg').innerHTML = '';
-        if (res.success) {
-          document.getElementById('ticketResult').style.display = 'flex';
-          document.getElementById('ticketNumberDisplay').innerText = res.ticketNumber;
-          document.getElementById('ticketMeta').innerText = res.serviceType + ' • ' + res.createdTime;
-          document.getElementById('printTicketNumber').innerText = res.ticketNumber;
-          document.getElementById('printTicketMeta').innerText = res.serviceType + ' • ' + res.createdTime;
-        } else {
-          document.getElementById('statusMsg').innerHTML = '<div class="error">' + res.error + '</div>';
-        }
-      }, function (err) {
-        document.getElementById('statusMsg').innerHTML = '<div class="error">' + err.message + '</div>';
-      });
+      HospitalAPI.createTicket(serviceType)
+        .then(function (res) {
+          document.getElementById('statusMsg').innerHTML = '';
+          if (res.success) {
+            document.getElementById('ticketResult').style.display = 'flex';
+            document.getElementById('ticketNumberDisplay').innerText = res.ticketNumber;
+            document.getElementById('ticketMeta').innerText = res.serviceType + ' • ' + res.createdTime;
+            document.getElementById('printTicketNumber').innerText = res.ticketNumber;
+            document.getElementById('printTicketMeta').innerText = res.serviceType + ' • ' + res.createdTime;
+          } else {
+            document.getElementById('statusMsg').innerHTML = '<div class="error">' + res.error + '</div>';
+          }
+        })
+        .catch(function (err) {
+          document.getElementById('statusMsg').innerHTML = '<div class="error">' + err.message + '</div>';
+        });
     }
 
     function resetView() {

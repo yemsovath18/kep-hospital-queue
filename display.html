@@ -226,8 +226,8 @@
           <div class="speaker-icon">🔊</div>
           <div class="ticket-number placeholder" id="ticketNumber">--</div>
           <div class="divider"></div>
-          <div class="proceed-text">Please proceed to</div>
-          <div class="counter-text">Counter <span id="counterNumber">-</span></div>
+          <div class="proceed-text">ទៅកាន់</div>
+          <div class="counter-text">បញ្ជរលេខ <span id="counterNumber">-</span></div>
         </div>
       </div>
 
@@ -236,7 +236,7 @@
         <div class="queue-table-wrap">
           <table class="queue-table">
             <thead>
-              <tr><th>No.</th><th>Queue No.</th><th>Counter</th></tr>
+              <tr><th>No.</th><th>លេខរង់ចាំ<br>Queue No.</th><th>លេខបញ្ជរ<br>Counter</th></tr>
             </thead>
             <tbody id="queueTableBody">
               <tr class="empty-row"><td colspan="3">មិនទាន់មានអ្នករង់ចាំ</td></tr>
@@ -259,8 +259,8 @@
         <div class="tagline-row">
           <div class="line"></div>
           <div>
-            <div class="tagline-khmer">សុខភាពល្អ ស្របទាំងអស់គ្នា</div>
-            <div class="tagline-english">Better Health for a Brighter Future</div>
+            <div class="tagline-khmer">Better Care, Better Health</div>
+            <div class="tagline-english">By : YEM SOVATH</div>
           </div>
           <div class="line"></div>
         </div>
@@ -383,7 +383,7 @@
           repeatTimer = setTimeout(function () {
             // Only repeat if this is still the current ticket being called
             if (currentAnnounceKeys === keys) runOnce();
-          }, 4000);
+          }, 15000);
         });
       };
       runOnce();

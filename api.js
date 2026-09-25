@@ -1,48 +1,114 @@
-/* Hospital Queue System - GitHub Pages API bridge
- * This file replaces google.script.run when the UI is hosted on GitHub Pages.
- * The Google Apps Script Web App remains the backend/database API.
+/**
+ * ===================================================================
+ * HospitalAPI - JSONP bridge for GitHub Pages
+ * ===================================================================
+ * These 3 static pages (index.html, staff.html, display.html) are
+ * hosted on GitHub Pages, which cannot run Google Apps Script or
+ * read/write the Google Sheet directly. Instead, every page loads
+ * this file and calls HospitalAPI.<method>(...), which:
+ *
+ *   1. Builds a URL to the deployed Apps Script web app with
+ *      ?api=1&action=<method>&callback=<uniqueName>&...params
+ *   2. Injects a <script> tag pointing at that URL (JSONP) - this
+ *      avoids the browser's CORS restrictions, since it's treated
+ *      as loading a script, not a cross-origin XHR/fetch call.
+ *   3. Apps Script's handleApiRequest_() replies with:
+ *         uniqueName({...json result...});
+ *      which runs immediately once the script loads, calling our
+ *      registered callback function with the result.
+ *   4. That resolves (or rejects) a Promise, so calling code can use
+ *      HospitalAPI.getServiceTypesFull().then(function(services){...})
+ *
+ * IMPORTANT: replace DEPLOY_URL below if you ever redeploy the
+ * Apps Script web app and get a new /exec URL.
+ * ===================================================================
  */
-const GAS_API_URL =
-  'https://script.google.com/macros/s/AKfycbzBGPla1vetW7DsD7Eylhu0HvoSNC_HXi41cEZCV8TJpvPBrH_M1acCYMR1BLBiIfGv7w/exec';
 
-function apiCall(action, params, onSuccess, onFailure) {
-  params = params || {};
-  const callbackName = '__gas_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  const script = document.createElement('script');
+var HospitalAPI = (function () {
+  'use strict';
 
-  let finished = false;
-  const cleanup = () => {
-    if (finished) return;
-    finished = true;
-    try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
-    if (script.parentNode) script.parentNode.removeChild(script);
-  };
+  var DEPLOY_URL = 'https://script.google.com/macros/s/AKfycbxCRXvqDsG9qHhl9QSu358Sggehtv1ocu0cG-fZVz34yUQjqzaIOlDVhegRmIAGQx7VNw/exec';
+  var TIMEOUT_MS = 15000;
+  var callbackCounter = 0;
 
-  window[callbackName] = function (data) {
-    cleanup();
-    if (typeof onSuccess === 'function') onSuccess(data);
-  };
+  function jsonp(action, params) {
+    return new Promise(function (resolve, reject) {
+      callbackCounter++;
+      var callbackName = 'hospitalApiCallback_' + Date.now() + '_' + callbackCounter;
 
-  script.onerror = function () {
-    cleanup();
-    if (typeof onFailure === 'function') {
-      onFailure(new Error('Cannot connect to Google Apps Script API.'));
+      var script = document.createElement('script');
+      var timeoutId = null;
+
+      function cleanup() {
+        if (timeoutId) clearTimeout(timeoutId);
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = function (result) {
+        cleanup();
+        resolve(result);
+      };
+
+      var url = DEPLOY_URL + '?api=1&action=' + encodeURIComponent(action) + '&callback=' + callbackName;
+      params = params || {};
+      Object.keys(params).forEach(function (key) {
+        var value = params[key];
+        if (value === undefined || value === null) value = '';
+        url += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(value);
+      });
+
+      script.src = url;
+      script.onerror = function () {
+        cleanup();
+        reject(new Error('JSONP request failed for action: ' + action));
+      };
+
+      timeoutId = setTimeout(function () {
+        cleanup();
+        reject(new Error('JSONP request timed out for action: ' + action));
+      }, TIMEOUT_MS);
+
+      document.head.appendChild(script);
+    });
+  }
+
+  return {
+    getServiceTypes: function () {
+      return jsonp('getServiceTypes');
+    },
+    getServiceTypesWithCounters: function () {
+      return jsonp('getServiceTypesWithCounters');
+    },
+    getServiceTypesFull: function () {
+      return jsonp('getServiceTypesFull');
+    },
+    createTicket: function (serviceType) {
+      return jsonp('createTicket', { serviceType: serviceType });
+    },
+    getDisplayOverview: function () {
+      return jsonp('getDisplayOverview');
+    },
+    getLatestCalled: function () {
+      return jsonp('getLatestCalled');
+    },
+    getQueueData: function () {
+      return jsonp('getQueueData');
+    },
+    getDisplayData: function () {
+      return jsonp('getDisplayData');
+    },
+    callNextTicket: function (serviceType) {
+      return jsonp('callNextTicket', { serviceType: serviceType });
+    },
+    updateTicketStatus: function (queueId, newStatus) {
+      return jsonp('updateTicketStatus', { queueId: queueId, newStatus: newStatus });
+    },
+    getAudioManifest: function () {
+      return jsonp('getAudioManifest');
+    },
+    getAudioData: function (key) {
+      return jsonp('getAudioData', { key: key });
     }
   };
-
-  const query = new URLSearchParams();
-  query.set('api', '1');
-  query.set('action', action);
-  query.set('callback', callbackName);
-  query.set('_', Date.now().toString());
-
-  Object.keys(params).forEach(function (key) {
-    const value = params[key];
-    if (value !== undefined && value !== null) {
-      query.set(key, String(value));
-    }
-  });
-
-  script.src = GAS_API_URL + '?' + query.toString();
-  document.head.appendChild(script);
-}
+})();

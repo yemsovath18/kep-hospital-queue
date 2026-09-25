@@ -3,98 +3,42 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>មន្ទីរពេទ្យខេត្តកែប - ផ្ទាំងគ្រប់គ្រងបុគ្គលិក</title>
+  <title>ផ្ទាំងគ្រប់គ្រង (Staff)</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      min-height: 100%;
-      font-family: 'Khmer OS Siemrap', 'Segoe UI', Arial, sans-serif;
-      background: #eef4fb;
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Khmer OS Siemreap', 'Segoe UI', sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 20px;
+      color: #0f172a;
     }
-    .wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 20px 22px 40px;
-    }
-
-    /* ---------- Header ---------- */
-    .header {
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .refresh-note { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+    .call-section {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 18px;
       flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
     }
-    .logo-area { display: flex; align-items: center; gap: 12px; }
-    .logo-circle {
-      width: 50px; height: 50px;
-      border-radius: 50%;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      flex-shrink: 0;
-    }
-    .logo-circle img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
-    .hospital-name .khmer { font-size: 18px; font-weight: 800; color: #123a7a; }
-    .hospital-name .english { font-size: 12px; font-weight: 700; color: #4a6fa5; }
-    .page-title { font-size: 14px; font-weight: 700; color: #123a7a; }
-    .datetime { text-align: right; }
-    .datetime .date { font-size: 11px; color: #4a6fa5; font-weight: 600; }
-    .datetime .time { font-size: 17px; font-weight: 800; color: #123a7a; }
-
-    /* ---------- Call section ---------- */
-    .section-title { font-size: 15px; font-weight: 800; color: #123a7a; margin: 18px 0 10px; }
-    .call-any-btn {
-      display: block;
-      width: 100%;
-      padding: 16px;
-      margin-bottom: 14px;
-      border: none;
-      border-radius: 14px;
-      background: linear-gradient(120deg, #0a3474, #1554b3);
-      color: #fff;
-      font-size: 16px;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 6px 14px rgba(13,61,143,0.25);
-    }
-    .call-any-btn:active { transform: scale(0.99); }
-
-    .service-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
-    }
-    .service-btn {
+    .call-btn {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 14px;
+      padding: 12px 18px;
+      background: #2563eb;
+      color: white;
       border: none;
-      border-radius: 14px;
-      color: #fff;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 5px 12px rgba(0,0,0,0.15);
-      text-align: left;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+      transition: filter 0.12s;
     }
-    .service-btn:active { transform: scale(0.98); }
-    .service-btn .icon-circle {
-      width: 32px; height: 32px;
-      background: rgba(255,255,255,0.25);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-    .service-btn .info { flex: 1; min-width: 0; }
-    .service-btn .name {
-      font-size: 13px;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .service-btn .counter-label { font-size: 11px; opacity: 0.9; }
+    .call-btn:hover { filter: brightness(0.92); }
+    .call-btn.all { background: #16a34a; }
+    .call-btn .icon { font-size: 16px; }
 
     .color-0 { background: linear-gradient(120deg, #2563eb, #1554b3); }
     .color-1 { background: linear-gradient(120deg, #22a55e, #15803d); }
@@ -107,296 +51,155 @@
     .color-8 { background: linear-gradient(120deg, #6366f1, #4f46e5); }
     .color-9 { background: linear-gradient(120deg, #14b8a6, #0d9488); }
 
-    /* ---------- Queue table ---------- */
-    .table-wrap {
-      margin-top: 22px;
-      background: #fff;
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 6px 18px rgba(13,61,143,0.1);
-    }
-    .table-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 16px;
-      border-bottom: 1px solid #eef3fb;
-    }
-    .table-header .section-title { margin: 0; }
-    .refresh-note { font-size: 11px; color: #9aa8bd; }
-    table.queue-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    table.queue-table th {
-      background: #f3f7fd;
-      color: #4a6fa5;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 10px 8px;
-      text-align: left;
-      white-space: nowrap;
-    }
-    table.queue-table td {
-      padding: 10px 8px;
-      border-bottom: 1px solid #f0f4fa;
-      color: #1a1a1a;
-      white-space: nowrap;
-    }
-    table.queue-table tr:last-child td { border-bottom: none; }
-    .queue-table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    th, td { padding: 12px 14px; text-align: left; font-size: 14px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #e2e8f0; font-weight: 600; }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .Waiting { background: #fef3c7; color: #92400e; }
+    .Called { background: #dbeafe; color: #1e40af; }
+    .Done { background: #dcfce7; color: #166534; }
+    .Cancelled { background: #fee2e2; color: #991b1b; }
 
-    .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #fff;
-    }
-    .badge-waiting { background: #f59e0b; }
-    .badge-called { background: #2563eb; }
-    .badge-done { background: #16a34a; }
-    .badge-cancelled { background: #9ca3af; }
-
-    .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .row-actions button {
+      padding: 6px 10px;
+      margin-right: 4px;
       border: none;
-      border-radius: 8px;
-      padding: 5px 10px;
-      font-size: 11px;
-      font-weight: 700;
+      border-radius: 6px;
+      font-size: 12px;
       cursor: pointer;
-      color: #fff;
+      color: white;
     }
-    .btn-call { background: #2563eb; }
+    .btn-called { background: #2563eb; }
     .btn-done { background: #16a34a; }
-    .btn-cancel { background: #ef4444; }
-    .empty-cell { text-align: center; color: #aaa; padding: 20px; }
-
-    /* ---------- Toast ---------- */
-    #toast {
+    .btn-cancel { background: #dc2626; }
+    .toast {
       position: fixed;
-      left: 50%;
-      bottom: 26px;
-      transform: translateX(-50%) translateY(20px);
-      background: #123a7a;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s, transform 0.2s;
-      z-index: 100;
-      max-width: 90%;
-      text-align: center;
+      bottom: 20px;
+      right: 20px;
+      background: #0f172a;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      display: none;
     }
-    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    #toast.error { background: #d92d20; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="header">
-      <div class="logo-area">
-        <div class="logo-circle"><img src="data:image/png;base64,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" alt="Hospital Logo"></div>
-        <div class="hospital-name">
-          <div class="khmer" style="font-family:'Khmer OS Muol Light'">មន្ទីរពេទ្យខេត្តកែប</div>
-          <div class="english">KEP PROVINCIAL HOSPITAL</div>
-        </div>
-      </div>
-      <div class="page-title">ផ្ទាំងគ្រប់គ្រងបុគ្គលិក / Staff Control Panel</div>
-      <div class="datetime">
-        <div class="date" id="dateText">--</div>
-        <div class="time" id="timeText">--</div>
-      </div>
-    </div>
+  <h1>🩺 ផ្ទាំងគ្រប់គ្រង (Staff)</h1>
+  <p class="refresh-note">ធ្វើបច្ចុប្បន្នភាពស្វ័យប្រវត្តិរៀងរាល់ ៥ វិនាទី</p>
 
-    <div class="section-title">ហៅលេខបន្ទាប់</div>
-    <button class="call-any-btn" onclick="callNext('')">📢 ហៅលេខបន្ទាប់ (គ្រប់សេវាទាំងអស់)</button>
-    <div class="service-grid" id="serviceButtons"></div>
+  <div class="call-section" id="callButtons"></div>
 
-    <div class="table-wrap">
-      <div class="table-header">
-        <div class="section-title">បញ្ជីលេខរង់ចាំទាំងអស់</div>
-        <div class="refresh-note">ធ្វើបច្ចុប្បន្នភាពរៀងរាល់ ៥ វិនាទី</div>
-      </div>
-      <div class="queue-table-scroll">
-        <table class="queue-table">
-          <thead>
-            <tr>
-              <th>លេខ</th>
-              <th>សេវា</th>
-              <th>បញ្ជរ</th>
-              <th>ស្ថានភាព</th>
-              <th>ពេលចេញលេខ</th>
-              <th>ពេលហៅ</th>
-              <th>សកម្មភាព</th>
-            </tr>
-          </thead>
-          <tbody id="queueTableBody">
-            <tr><td class="empty-cell" colspan="7">កំពុងផ្ទុកទិន្នន័យ...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>លេខសំបុត្រ</th>
+        <th>សេវាកម្ម</th>
+        <th>បញ្ជរ<br>Counter</th>
+        <th>ស្ថានភាព</th>
+        <th>ម៉ោងចេញលេខ</th>
+        <th>ម៉ោងហៅ</th>
+        <th>សកម្មភាព</th>
+      </tr>
+    </thead>
+    <tbody id="queueBody"></tbody>
+  </table>
 
-  <div id="toast"></div>
+  <div class="toast" id="toast"></div>
 
   <script src="api.js"></script>
   <script>
-    var STATUS_LABELS = {
-      Waiting: 'កំពុងរង់ចាំ',
-      Called: 'បានហៅ',
-      Done: 'បានបញ្ចប់',
-      Cancelled: 'បានលុបចោល'
-    };
-    var STATUS_BADGE_CLASS = {
-      Waiting: 'badge-waiting',
-      Called: 'badge-called',
-      Done: 'badge-done',
-      Cancelled: 'badge-cancelled'
-    };
+    var pollTimer = null;
 
-    function updateClock() {
-      var now = new Date();
-      var dateStr = new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
-      var timeStr = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).format(now);
-      document.getElementById('dateText').innerText = dateStr;
-      document.getElementById('timeText').innerText = timeStr;
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-
-    function showToast(message, isError) {
-      var el = document.getElementById('toast');
-      el.textContent = message;
-      el.className = isError ? 'show error' : 'show';
-      clearTimeout(showToast._timer);
-      showToast._timer = setTimeout(function () {
-        el.className = '';
-      }, 3000);
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(function () { t.style.display = 'none'; }, 2500);
     }
 
     function loadServiceButtons() {
-      HospitalAPI.getServiceTypesFull()
-        .then(renderServiceButtons)
-        .catch(function (err) { showToast('កំហុស៖ ' + err.message, true); });
-    }
+      HospitalAPI.getServiceTypesFull().then(function (services) {
+        var container = document.getElementById('callButtons');
+        container.innerHTML = '';
 
-    function renderServiceButtons(services) {
-      var container = document.getElementById('serviceButtons');
-      container.innerHTML = '';
-      services.forEach(function (s) {
-        var btn = document.createElement('button');
-        btn.className = 'service-btn ' + s.colorClass;
-        btn.innerHTML =
-          '<div class="icon-circle">' + s.icon + '</div>' +
-          '<div class="info">' +
-            '<div class="name">' + s.name + '</div>' +
-            '<div class="counter-label">បញ្ជរ ' + s.counter + '</div>' +
-          '</div>';
-        btn.onclick = function () { callNext(s.name); };
-        container.appendChild(btn);
+        var allBtn = document.createElement('button');
+        allBtn.className = 'call-btn all';
+        allBtn.innerHTML = '<span class="icon">📢</span> ហៅលេខបន្ទាប់ (ណាមួយ)';
+        allBtn.onclick = function () { callNext(''); };
+        container.appendChild(allBtn);
+
+        services.forEach(function (s) {
+          var btn = document.createElement('button');
+          btn.className = 'call-btn ' + s.colorClass;
+          btn.innerHTML = '<span class="icon">' + s.icon + '</span> ' + s.name + ' (Counter ' + s.counter + ')';
+          btn.onclick = function () { callNext(s.name); };
+          container.appendChild(btn);
+        });
+      }).catch(function (err) {
+        showToast(err.message);
       });
     }
 
     function callNext(serviceType) {
-      HospitalAPI.callNextTicket(serviceType)
-        .then(function (res) {
-          if (res.success) {
-            showToast('បានហៅលេខ ' + res.ticketNumber + ' (' + res.serviceType + ')');
-            refreshQueue();
-          } else {
-            showToast('កំហុស៖ ' + res.error, true);
-          }
-        })
-        .catch(function (err) { showToast('កំហុស៖ ' + err.message, true); });
+      HospitalAPI.callNextTicket(serviceType).then(function (res) {
+        if (res.success) {
+          showToast('បានហៅលេខ ' + res.ticketNumber + ' (' + res.serviceType + ')');
+          refreshQueue();
+        } else {
+          showToast(res.error);
+        }
+      }).catch(function (err) {
+        showToast(err.message);
+      });
     }
 
-    function updateStatus(queueId, newStatus, btn) {
-      if (btn) btn.disabled = true;
-      HospitalAPI.updateTicketStatus(queueId, newStatus)
-        .then(function (res) {
-          if (res.success) {
-            showToast('បានធ្វើបច្ចុប្បន្នភាពស្ថានភាព');
-            refreshQueue();
-          } else {
-            showToast('កំហុស៖ ' + res.error, true);
-            if (btn) btn.disabled = false;
-          }
-        })
-        .catch(function (err) {
-          showToast('កំហុស៖ ' + err.message, true);
-          if (btn) btn.disabled = false;
-        });
+    function updateStatus(queueId, status) {
+      HospitalAPI.updateTicketStatus(queueId, status).then(function (res) {
+        if (res.success) { showToast('បានធ្វើបច្ចុប្បន្នភាព'); refreshQueue(); }
+        else { showToast(res.error); }
+      }).catch(function (err) {
+        showToast(err.message);
+      });
     }
 
     function refreshQueue() {
-      HospitalAPI.getQueueData()
-        .then(renderQueueTable)
-        .catch(function (err) { showToast('កំហុស៖ ' + err.message, true); });
+      HospitalAPI.getQueueData().then(renderQueue).catch(function (err) {
+        showToast(err.message);
+      });
     }
 
-    function renderQueueTable(rows) {
-      var tbody = document.getElementById('queueTableBody');
+    function renderQueue(rows) {
+      var tbody = document.getElementById('queueBody');
       tbody.innerHTML = '';
-
-      if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td class="empty-cell" colspan="7">មិនទាន់មានទិន្នន័យ</td></tr>';
-        return;
-      }
-
-      // Newest first, so staff sees the latest tickets at the top.
-      var sorted = rows.slice().reverse();
-
-      sorted.forEach(function (row) {
+      // Show most recent first
+      rows.slice().reverse().forEach(function (row) {
         var tr = document.createElement('tr');
 
-        var badgeClass = STATUS_BADGE_CLASS[row.status] || 'badge-waiting';
-        var statusLabel = STATUS_LABELS[row.status] || row.status;
-
-        var actionsHtml = '';
+        var actions = '';
         if (row.status === 'Waiting') {
-          actionsHtml +=
-            '<button class="btn-call" data-action="call">ហៅ</button>' +
-            '<button class="btn-cancel" data-action="cancel">លុប</button>';
+          actions += '<button class="btn-called" onclick="updateStatus(\'' + row.queueId + '\',\'Called\')">ហៅ</button>';
+          actions += '<button class="btn-cancel" onclick="updateStatus(\'' + row.queueId + '\',\'Cancelled\')">លុប</button>';
         } else if (row.status === 'Called') {
-          actionsHtml +=
-            '<button class="btn-done" data-action="done">បញ្ចប់</button>' +
-            '<button class="btn-cancel" data-action="cancel">លុប</button>';
+          actions += '<button class="btn-done" onclick="updateStatus(\'' + row.queueId + '\',\'Done\')">រួចរាល់</button>';
+          actions += '<button class="btn-cancel" onclick="updateStatus(\'' + row.queueId + '\',\'Cancelled\')">លុប</button>';
         }
 
         tr.innerHTML =
           '<td><strong>' + row.ticketNumber + '</strong></td>' +
           '<td>' + row.serviceType + '</td>' +
-          '<td>' + row.counter + '</td>' +
-          '<td><span class="badge ' + badgeClass + '">' + statusLabel + '</span></td>' +
-          '<td>' + (row.createdTime || '-') + '</td>' +
+          '<td style="text-align:center;font-weight:700;color:#1554b3">' + row.counter + '</td>' +
+          '<td><span class="badge ' + row.status + '">' + row.status + '</span></td>' +
+          '<td>' + row.createdTime + '</td>' +
           '<td>' + (row.calledTime || '-') + '</td>' +
-          '<td><div class="row-actions">' + actionsHtml + '</div></td>';
-
-        var callBtn = tr.querySelector('[data-action="call"]');
-        if (callBtn) {
-          callBtn.onclick = function () { updateStatus(row.queueId, 'Called', callBtn); };
-        }
-        var doneBtn = tr.querySelector('[data-action="done"]');
-        if (doneBtn) {
-          doneBtn.onclick = function () { updateStatus(row.queueId, 'Done', doneBtn); };
-        }
-        var cancelBtn = tr.querySelector('[data-action="cancel"]');
-        if (cancelBtn) {
-          cancelBtn.onclick = function () { updateStatus(row.queueId, 'Cancelled', cancelBtn); };
-        }
-
+          '<td class="row-actions">' + actions + '</td>';
         tbody.appendChild(tr);
       });
     }
 
     loadServiceButtons();
     refreshQueue();
-    setInterval(refreshQueue, 5000);
+    pollTimer = setInterval(refreshQueue, 5000);
   </script>
 </body>
 </html>
